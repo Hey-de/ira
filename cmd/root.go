@@ -16,70 +16,62 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"github.com/spf13/cobra"
+	"runtime"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ira",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "A package manager for Windows, Mac OS & Linux",
+	Long: `A cross-platform package manager brought to you by BIQ
+	Here you may install many applications. As a differency between
+	another PMs and IRA in compatibility with Snap/Flatpak, WSL, brew,
+	source code and more
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	How to use?
+	Example:
+	* ira install vscode - Installing Visual Studio Code
+	* ira remove steam - Removing Steam
+	* ira append gui - Add IRA command 'gui'
+	* ira recompile - Recompilling IRA PM from source code
+	`,
 }
+var repoFile string
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initRepo)
+	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ira.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
+func initRepo() {
+	if repoFile != "" {
+		viper.SetConfigFile(repoFile)
 	} else {
-		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-
-		// Search config in home directory with name ".ira" (without extension).
-		viper.AddConfigPath(home)
+		if runtime.GOOS == "windows" {
+			viper.AddConfigPath(home + "\\AppData")
+		} else {
+			viper.AddConfigPath(home)
+		}
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".ira")
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		viper.SetConfigName(".cats")
+		if err := viper.ReadInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+				viper.Set("bpaks", map[string]map[string]string{
+					"bpaks": {
+						"core": "https://github.com/BIQ-Cat/core",
+					},
+				})
+			}
+		}
 	}
 }
