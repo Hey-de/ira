@@ -20,6 +20,7 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -61,6 +62,7 @@ func initRepo() {
 		}
 		path += ".ira.yml"
 	}
-	_, err := os.ReadFile(path)
+	data, err := os.ReadFile(path)
 	cobra.CheckErr(err)
+	yaml.Unmarshal(data)
 }
