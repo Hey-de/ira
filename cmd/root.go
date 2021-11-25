@@ -20,7 +20,6 @@ import (
 	"runtime"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -44,34 +43,24 @@ var repoFile string
 
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
+	initRepo()
 }
 
 func init() {
-	cobra.OnInitialize(initRepo)
 	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
-
 }
 func initRepo() {
-	if repoFile != "" {
-		viper.SetConfigFile(repoFile)
-	} else {
-		home, err := os.UserHomeDir()
+	var path = repoFile
+	if repoFile == "" {
+		path, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 		if runtime.GOOS == "windows" {
-			viper.AddConfigPath(home + "\\AppData")
+			path += "\\AppData\\"
 		} else {
-			viper.AddConfigPath(home)
+			path += "/"
 		}
-		viper.SetConfigType("yaml")
-		viper.SetConfigName(".cats")
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				viper.Set("bpaks", map[string]map[string]string{
-					"bpaks": {
-						"core": "https://github.com/BIQ-Cat/core",
-					},
-				})
-			}
-		}
+		path += ".ira.yml"
 	}
+	_, err := os.ReadFile(path)
+	cobra.CheckErr(err)
 }
