@@ -16,10 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"io/ioutil"
 	"os"
 	"runtime"
 
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -40,6 +42,7 @@ var rootCmd = &cobra.Command{
 	`,
 }
 var repoFile string
+var repos map[string]map[string]string
 
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
@@ -50,17 +53,29 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
 }
 func initRepo() {
-	var path = repoFile
+	var path string
 	if repoFile == "" {
-		path, err := os.UserHomeDir()
+		println("a")
+		var err error
+		path, err = os.UserHomeDir()
 		cobra.CheckErr(err)
+		println(path)
 		if runtime.GOOS == "windows" {
 			path += "\\AppData\\"
 		} else {
 			path += "/"
 		}
 		path += ".ira.yml"
+		println(path)
+	} else {
+		path = repoFile
 	}
-	_, err := os.ReadFile(path)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND, os.ModePerm)
 	cobra.CheckErr(err)
+	if runtime.GOOS == "windows" {
+
+	}
+	data, err := ioutil.ReadAll(file)
+	cobra.CheckErr(err)
+	cobra.CheckErr(yaml.Unmarshal(data, repos))
 }
