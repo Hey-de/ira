@@ -24,6 +24,8 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
+var path string
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ira",
@@ -53,7 +55,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
 }
 func initRepo() {
-	var path string
 	if repoFile == "" {
 		println("a")
 		var err error
@@ -72,9 +73,6 @@ func initRepo() {
 	}
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND, os.ModePerm)
 	cobra.CheckErr(err)
-	if runtime.GOOS == "windows" {
-
-	}
 	data, err := ioutil.ReadAll(file)
 	cobra.CheckErr(err)
 	cobra.CheckErr(yaml.Unmarshal(data, repos))

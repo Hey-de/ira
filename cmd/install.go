@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -10,18 +12,21 @@ var installCmd = &cobra.Command{
 	Short: "install a package",
 	Long:  ``,
 	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		if _, ok := repos["bpak"]; ok {
+			cats := repos["bpak"]
+			fmt.Printf("cats: %v\n", cats)
+		}
+		// } else {
+		// 	// repos["bpak"] = make(map[string]string)
+		// 	repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
+		// 	toWrite, err := yaml.Marshal(repos)
+		// 	cobra.CheckErr(err)
+		// 	cobra.CheckErr(os.WriteFile(path, toWrite, os.ModePerm))
+		// }
+	},
 }
 
 func init() {
 	rootCmd.AddCommand(installCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
