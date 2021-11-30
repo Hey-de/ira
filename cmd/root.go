@@ -16,12 +16,12 @@ limitations under the License.
 package cmd
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"runtime"
 
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v3"
 )
 
 var path string
@@ -47,14 +47,15 @@ var repoFile string
 var repos map[string]map[string]string
 
 func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
 	initRepo()
+	cobra.CheckErr(rootCmd.Execute())
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
 }
 func initRepo() {
+	println(repoFile)
 	if repoFile == "" {
 		println("a")
 		var err error
@@ -66,7 +67,7 @@ func initRepo() {
 		} else {
 			path += "/"
 		}
-		path += ".ira.yml"
+		path += ".ira.json"
 		println(path)
 	} else {
 		path = repoFile
@@ -74,6 +75,7 @@ func initRepo() {
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND, os.ModePerm)
 	cobra.CheckErr(err)
 	data, err := ioutil.ReadAll(file)
+	println(data)
 	cobra.CheckErr(err)
-	cobra.CheckErr(yaml.Unmarshal(data, repos))
+	cobra.CheckErr(json.Unmarshal(data, &repos))
 }

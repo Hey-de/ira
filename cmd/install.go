@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
@@ -16,14 +18,17 @@ var installCmd = &cobra.Command{
 		if _, ok := repos["bpak"]; ok {
 			cats := repos["bpak"]
 			fmt.Printf("cats: %v\n", cats)
+		} else {
+			if repos == nil {
+				repos = make(map[string]map[string]string)
+			}
+			repos["bpak"] = make(map[string]string)
+			repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
+			toWrite, err := json.Marshal(repos)
+			cobra.CheckErr(err)
+			println(path)
+			cobra.CheckErr(os.WriteFile(path, toWrite, os.ModeAppend))
 		}
-		// } else {
-		// 	// repos["bpak"] = make(map[string]string)
-		// 	repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
-		// 	toWrite, err := yaml.Marshal(repos)
-		// 	cobra.CheckErr(err)
-		// 	cobra.CheckErr(os.WriteFile(path, toWrite, os.ModePerm))
-		// }
 	},
 }
 
