@@ -1,12 +1,23 @@
 package cmd
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
+	"os/exec"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
+
+func installPackage(cats map[string]string) {
+	color.Blue("Looking for cache...")
+	if err := os.Mkdir(getTemporaryPath()+"core", os.ModePerm); err == nil {
+		color.Red("Cache not found")
+		color.Blue("Loading cache...")
+		cmd := exec.Command("git", "clone", cats["core"], getTemporaryPath()+"core")
+		cobra.CheckErr(cmd.Run())
+		color.Green("Sucsessiful downloaded")
+	}
+}
 
 // installCmd represents the install command
 var installCmd = &cobra.Command{
@@ -14,20 +25,12 @@ var installCmd = &cobra.Command{
 	Short: "install a package",
 	Long:  ``,
 	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		if _, ok := repos["bpak"]; ok {
-			cats := repos["bpak"]
-			fmt.Printf("cats: %v\n", cats)
-		} else {
-			if repos == nil {
-				repos = make(map[string]map[string]string)
-			}
-			repos["bpak"] = make(map[string]string)
-			repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
-			toWrite, err := json.Marshal(repos)
-			cobra.CheckErr(err)
-			println(path)
-			cobra.CheckErr(os.WriteFile(path, toWrite, os.ModeAppend))
+	Run: func(cmnd *cobra.Command, args []string) {
+		cats := repos["bpak"]
+		color.Blue("Looking for Git...")
+		if _, err := exec.LookPath("git"); err == nil {
+			color.Green("Git found!")
+			installPackage(cats)
 		}
 	},
 }

@@ -26,6 +26,31 @@ import (
 
 var path string
 
+func getTemporaryPath() string {
+	retPath, err := os.UserHomeDir()
+	cobra.CheckErr(err)
+	println(path)
+	if runtime.GOOS == "windows" {
+		retPath += "\\AppData\\iraCache\\"
+	} else {
+		retPath += "/iraCache/"
+	}
+	_ = os.Mkdir(retPath, os.ModePerm)
+	return retPath
+}
+func newCatRepo(file *os.File) {
+	if repos == nil {
+		repos = make(map[string]map[string]string)
+	}
+	repos["bpak"] = make(map[string]string)
+	repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
+	toWrite, err := json.Marshal(repos)
+	cobra.CheckErr(err)
+	println(path)
+	_, err = file.Write(toWrite)
+	cobra.CheckErr(err)
+}
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "ira",
@@ -52,7 +77,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.yaml)")
+	rootCmd.PersistentFlags().StringVarP(&repoFile, "catsfile", "c", "", "File with cats (Default $HOME/.ira.json)")
 }
 func initRepo() {
 	println(repoFile)
@@ -75,7 +100,10 @@ func initRepo() {
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND, os.ModePerm)
 	cobra.CheckErr(err)
 	data, err := ioutil.ReadAll(file)
-	println(data)
 	cobra.CheckErr(err)
-	cobra.CheckErr(json.Unmarshal(data, &repos))
+	if string(data) == "" {
+		newCatRepo(file)
+	} else {
+		cobra.CheckErr(json.Unmarshal(data, &repos))
+	}
 }
