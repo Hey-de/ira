@@ -29,11 +29,10 @@ var path string
 func getTemporaryPath() string {
 	retPath, err := os.UserHomeDir()
 	cobra.CheckErr(err)
-	println(path)
 	if runtime.GOOS == "windows" {
 		retPath += "\\AppData\\iraCache\\"
 	} else {
-		retPath += "/iraCache/"
+		retPath += "/.iraCache/"
 	}
 	_ = os.Mkdir(retPath, os.ModePerm)
 	return retPath
@@ -44,6 +43,8 @@ func newCatRepo(file *os.File) {
 	}
 	repos["bpak"] = make(map[string]string)
 	repos["bpak"]["core"] = "https://github.com/BIQ-Cat/core"
+	repos["exe"] = make(map[string]string)
+	repos["exe"]["git"] = "https://github.com/git-for-windows/git/releases/download/v2.34.1.windows.1/Git-2.34.1-64-bit.exe"
 	toWrite, err := json.Marshal(repos)
 	cobra.CheckErr(err)
 	println(path)

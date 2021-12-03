@@ -8,15 +8,33 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func installPackage(cats map[string]string) {
+func DownloadBPaks(args []string, repos map[string]map[string]string) bool {
+	cats := repos["bpak"]
+	color.Blue("Looking for Git...")
+	var ret = false
+	if _, err := exec.LookPath("git"); err == nil {
+		color.Green("Git found!")
+		ret = loadCache(cats)
+	} else {
+		return false
+	}
+	return ret
+}
+
+func loadCache(cats map[string]string) bool {
 	color.Blue("Looking for cache...")
 	if err := os.Mkdir(getTemporaryPath()+"core", os.ModePerm); err == nil {
 		color.Red("Cache not found")
 		color.Blue("Loading cache...")
-		cmd := exec.Command("git", "clone", cats["core"], getTemporaryPath()+"core")
-		cobra.CheckErr(cmd.Run())
-		color.Green("Sucsessiful downloaded")
+		for k, v := range cats {
+			cmd := exec.Command("git", "clone", v, getTemporaryPath()+k)
+			cobra.CheckErr(cmd.Run())
+		}
+		color.Green("Successiful")
+		return false
 	}
+	color.Green("Found the cache")
+	return true
 }
 
 // installCmd represents the install command
@@ -30,7 +48,7 @@ var installCmd = &cobra.Command{
 		color.Blue("Looking for Git...")
 		if _, err := exec.LookPath("git"); err == nil {
 			color.Green("Git found!")
-			installPackage(cats)
+			loadCache(cats)
 		}
 	},
 }
